@@ -1,0 +1,89 @@
+package com.skillbridge.controller;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
+import com.skillbridge.model.Service;
+import com.skillbridge.service.ServiceService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/services")
+@CrossOrigin(origins = "*")
+public class ServiceController {
+
+    private final ServiceService serviceService;
+
+    public ServiceController(ServiceService serviceService) {
+        this.serviceService = serviceService;
+    }
+
+    @PostMapping
+    public Service createService(
+            @RequestBody Service service,
+            @RequestHeader("Authorization") String token
+    ) {
+        return serviceService.createService(service, token);
+    }
+
+    @GetMapping
+    public List<Service> getAllServices() {
+        return serviceService.getAllServices();
+    }
+
+    @GetMapping("/my-services")
+    public List<Service> getMyServices(@RequestHeader("Authorization") String token) {
+
+        System.out.println("TOKEN RAW: " + token);
+
+        if (token == null || token.isEmpty()) {
+            throw new RuntimeException("Token mancante");
+        }
+
+        token = token.replace("Bearer ", "");
+
+        System.out.println("TOKEN CLEAN: " + token);
+
+        return serviceService.getMyServices(token);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteService(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token
+    ) {
+        token = token.replace("Bearer ", "");
+        serviceService.deleteService(id, token);
+    }
+
+    @GetMapping("/category/{category}")
+    public List<Service> getServicesByCategory(@PathVariable String category) {
+        return serviceService.getServicesByCategory(category);
+    }
+
+    @GetMapping("/price/{price}")
+    public List<Service> getServicesByMaxPrice(@PathVariable double price) {
+        return serviceService.getServicesByMaxPrice(price);
+    }
+
+    @GetMapping("/filter")
+    public List<Service> filterServices(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Double maxPrice
+    ) {
+        return serviceService.filterServices(category, maxPrice);
+    }
+    @GetMapping("/{id}")
+    public Service getServiceById(@PathVariable Long id) {
+        return serviceService.getServiceById(id);
+    }
+    @PutMapping("/{id}")
+    public Service updateService(
+            @PathVariable Long id,
+            @RequestBody Service service,
+            @RequestHeader("Authorization") String token
+    ) {
+        token = token.replace("Bearer ", "");
+        return serviceService.updateService(id, service, token);
+    }
+}
